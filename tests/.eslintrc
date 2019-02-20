@@ -1,0 +1,12 @@
+{
+  "env": {
+    "mocha": true
+  },
+  "rules": {
+    "max-nested-callbacks": 0
+  },
+  "globals": {
+    "describe": true,
+    "it": true
+  }
+}

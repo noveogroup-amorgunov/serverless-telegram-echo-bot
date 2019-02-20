@@ -1,0 +1,46 @@
+{
+  "name": "serverless-telegram-echo-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot using AWS API Gateway and AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "local": "sls offline start",
+    "logs": "sls logs --function processWebhook -t",
+    "deploy": "sls deploy",
+    "lint": "eslint .",
+    "test": "NODE_ENV=test NODE_PATH=. mocha tests/**/*.spec.js --exit"
+  },
+  "keywords": [],
+  "author": "Alexander Morgunov <fxl@list.ru>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "5.14.0",
+    "eslint-config-iddqd": "1.2.0",
+    "eslint-plugin-import": "2.16.0",
+    "husky": "1.3.1",
+    "mocha": "5.2.0",
+    "nock": "10.0.6",
+    "serverless": "1.37.1",
+    "serverless-dotenv-plugin": "2.0.1",
+    "serverless-offline": "4.5.0"
+  },
+  "dependencies": {
+    "axios-https-proxy-fix": "0.17.1"
+  },
+  "eslintConfig": {
+    "extends": "iddqd/node",
+    "parserOptions": {
+      "ecmaVersion": 2017
+    },
+    "rules": {
+      "camelcase": 0,
+      "capitalized-comments": 0
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run lint"
+    }
+  }
+}
