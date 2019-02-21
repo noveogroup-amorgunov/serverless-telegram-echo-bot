@@ -1,17 +1,36 @@
-service: my-telegram-bot
+service: telegram-reactions-buttons
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-dynamodb-local
   - serverless-offline
+
+custom:
+  tableName: 'messages-table-${self:provider.stage}'
+  dynamodb:
+    start:
+      migrate: true
 
 provider:
   name: aws
   runtime: nodejs8.10
   stage: dev
   region: us-east-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["MessagesDynamoDBTable", "Arn" ] }
   environment:
     TELEGRAM_TOKEN: ${env:TELEGRAM_TOKEN}
     TELEGRAM_PROXY: ${env:TELEGRAM_PROXY}
+    MESSAGES_TABLE: ${self:custom.tableName}
 
 functions:
   processWebhook:
@@ -20,3 +39,27 @@ functions:
       - http:
           path: /
           method: post
+  sendMessage:
+    handler: handler.sendMessage
+    events:
+      - http:
+          path: /send
+          method: post
+
+resources:
+  Resources:
+    MessagesDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.tableName}
