@@ -12,7 +12,7 @@ class Dynamo {
                 Key,
                 UpdateExpression: 'SET #name = :value',
                 ExpressionAttributeNames: { '#name': attributeName },
-                ExpressionAttributeValues: { ':value' : value }
+                ExpressionAttributeValues: { ':value': value }
             }, error => {
                 if (error) {
                     console.error(error);
@@ -38,6 +38,7 @@ class Dynamo {
             client.get({ TableName, Key }, (error, result) => {
                 if (error) {
                     console.error(error); // Could not get message
+
                     return resolve(null);
                 }
 

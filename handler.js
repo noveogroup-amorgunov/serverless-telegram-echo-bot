@@ -3,6 +3,8 @@ const Dynamo = require('./dynamo');
 
 function updateButtons(buttons, data, voterId) {
     let loaderText = 'Loading...';
+
+    // eslint-disable-next-line complexity
     const updatedButtons = buttons.map(button => {
         button.votersIds = button.votersIds || [];
 
@@ -26,6 +28,7 @@ function updateButtons(buttons, data, voterId) {
     return [updatedButtons, loaderText];
 }
 
+// eslint-disable-next-line max-statements
 module.exports.processWebhook = async event => {
     const body = JSON.parse(event.body);
     const { callback_query } = body;
@@ -44,19 +47,14 @@ module.exports.processWebhook = async event => {
 
     if (!msg) {
         console.warn('Message is not found in database');
+
         return { statusCode: 200 };
     }
 
     const [buttons, loaderText] = updateButtons(msg.buttons, data, from.id);
 
     await Dynamo.update(Dynamo.tables.MESSAGES, { id }, ['buttons', buttons]);
-    await Telegram.editMessage({
-        chat_id: chat.id,
-        message_id,
-        text: msg.text,
-        disable_web_page_preview: msg.disable_web_page_preview,
-        buttons
-    });
+    await Telegram.editMessageButtons({ chat_id: chat.id, message_id, buttons });
 
     return {
         statusCode: 200,
@@ -64,18 +62,19 @@ module.exports.processWebhook = async event => {
             method: 'answerCallbackQuery',
             callback_query_id: callback_query.id,
             text: loaderText
-        }),
+        })
     };
 };
 
 module.exports.sendMessage = async event => {
     const body = JSON.parse(event.body);
 
-    const { chat_id, text, buttons, disable_web_page_preview } = body;
-    const data = await Telegram.sendMessage({ chat_id, text, buttons, disable_web_page_preview });
+    const method = body.image ? 'sendPhoto' : 'sendMessage';
+    const data = await Telegram[method](body);
+
     const id = `${data.result.chat.id}-${data.result.message_id}`;
 
-    const created = await Dynamo.put(Dynamo.tables.MESSAGES, { id, text, buttons, disable_web_page_preview });
+    const created = await Dynamo.put(Dynamo.tables.MESSAGES, { id, buttons: body.buttons });
 
     return {
         statusCode: 200,
