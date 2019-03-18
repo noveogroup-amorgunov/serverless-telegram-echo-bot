@@ -15,6 +15,16 @@ class Telegram {
         });
     }
 
+    static async sendVideo({ chat_id, video, text, buttons = [] }) {
+        return await this.request('sendVideo', {
+            parse_mode: 'Markdown',
+            chat_id,
+            video,
+            caption: text,
+            reply_markup: this.createInlineKeyboard(buttons)
+        });
+    }
+
     static async sendMessage({ chat_id, text, buttons = [], disable_web_page_preview = false }) {
         return await this.request('sendMessage', {
             parse_mode: 'Markdown',

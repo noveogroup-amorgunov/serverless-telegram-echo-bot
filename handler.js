@@ -1,6 +1,15 @@
 const Telegram = require('./telegram');
 const Dynamo = require('./dynamo');
 
+function getMethodByBody(body) {
+    if (body.image) {
+        return 'sendPhoto';
+    } else if (body.video) {
+        return 'sendVideo';
+    }
+    return 'sendMessage';
+}
+
 function updateButtons(buttons, data, voterId) {
     let loaderText = 'Loading...';
 
@@ -69,7 +78,7 @@ module.exports.processWebhook = async event => {
 module.exports.sendMessage = async event => {
     const body = JSON.parse(event.body);
 
-    const method = body.image ? 'sendPhoto' : 'sendMessage';
+    const method = getMethodByBody(body);
     const data = await Telegram[method](body);
 
     const id = `${data.result.chat.id}-${data.result.message_id}`;
